@@ -2,7 +2,8 @@ import java.util.Scanner;
 
 public class Luke {
     private static String[] tasks = new String[100];
-    private static int taskCount = 0;
+    private static boolean[] taskStatus = new boolean[100];
+    private static int numberOfTasks = 0;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -22,10 +23,16 @@ public class Luke {
                 isRunning = false;
             } else if (input.equals("list")) {
                 listTasks();
+            } else if (input.startsWith("mark ")) {
+                int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
+                markAsDone(taskNum);
+            } else if (input.startsWith("unmark ")) {
+                int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
+                markAsNotDone(taskNum);
             } else {
-                tasks[taskCount] = input;
+                tasks[numberOfTasks] = input;
                 System.out.println("added: " + input);
-                taskCount++;
+                numberOfTasks++;
             }
             printLine();
         }
@@ -33,13 +40,29 @@ public class Luke {
     }
 
     private static void listTasks() {
-        if (taskCount == 0) {
+        if (numberOfTasks == 0) {
             System.out.println("No tasks in your list!");
             return;
         }
         System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + ". " + tasks[i]);
+        for (int i = 0; i < numberOfTasks; i++) {
+            System.out.println((i + 1) + "." + (taskStatus[i] ? "[X] " : "[ ] ") + tasks[i]);
+        }
+    }
+
+    private static void markAsDone(int taskNum) {
+        if (taskNum >= 0 && taskNum < numberOfTasks) {
+            taskStatus[taskNum] = true;
+            System.out.println("Nice! I've marked this task as done:");
+            System.out.println("[X] " + tasks[taskNum]);
+        }
+    }
+
+    private static void markAsNotDone(int taskNum) {
+        if (taskNum >= 0 && taskNum < numberOfTasks) {
+            taskStatus[taskNum] = false;
+            System.out.println("OK, I've marked this task as not done yet:");
+            System.out.println("[ ] " + tasks[taskNum]);
         }
     }
 
