@@ -25,20 +25,46 @@ public class Luke {
                 isRunning = false;
             } else if (input.equals("list")) {
                 listTasks();
-            } else if (input.startsWith("mark ")) {
-                int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
-                markAsDone(taskNum);
-            } else if (input.startsWith("unmark ")) {
-                int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
-                markAsNotDone(taskNum);
+            } else if (input.startsWith("mark ") || input.startsWith("unmark ")) {
+                if (input.length() <= 5) {
+                    System.out.println("Please indicate which task to mark! Try again.");
+                } else {
+                    try {
+                        int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
+                        if (taskNum < 0 || taskNum >= numberOfTasks) {
+                            System.out.println("That task number does not exist! Try again.");
+                        } else if (input.startsWith("mark ")) {
+                            markAsDone(taskNum);
+                        } else {
+                            markAsNotDone(taskNum);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please give me a valid task number! Try again.");
+                    }
+                }
             } else if (input.startsWith("todo ")) {
-                addTodo(input);
+                // Handle todo errors
+                if (input.length() <= 5) { // just "todo "
+                    System.out.println("Please tell me what to do! Try again.");
+                } else {
+                    addTodo(input);
+                }
             } else if (input.startsWith("deadline ")) {
-                addDeadline(input);
+                // Handle deadline errors
+                if (!input.contains("/by")) {
+                    System.out.println("Please tell me the deadline using /by after a task! Try again.");
+                } else {
+                    addDeadline(input);
+                }
             } else if (input.startsWith("event ")) {
-                addEvent(input);
+                // Handle event errors
+                if (!input.contains("/from") || !input.contains("/to")) {
+                    System.out.println("Please tell me the time using /from and /to! Try again.");
+                } else {
+                    addEvent(input);
+                }
             } else {
-                System.out.println("I am not sure what that means! Please try again.");
+                System.out.println("I don't know what that means! Try again.");
             }
             printLine();
         }
