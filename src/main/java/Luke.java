@@ -43,25 +43,37 @@ public class Luke {
                     }
                 }
             } else if (input.startsWith("todo ")) {
-                // Handle todo errors
-                if (input.length() <= 5) { // just "todo "
+                if (input.length() <= 5) {
                     System.out.println("Please tell me what to do! Try again.");
                 } else {
                     addTodo(input);
                 }
             } else if (input.startsWith("deadline ")) {
-                // Handle deadline errors
                 if (!input.contains("/by")) {
                     System.out.println("Please tell me the deadline using /by after a task! Try again.");
                 } else {
                     addDeadline(input);
                 }
             } else if (input.startsWith("event ")) {
-                // Handle event errors
                 if (!input.contains("/from") || !input.contains("/to")) {
                     System.out.println("Please tell me the time using /from and /to! Try again.");
                 } else {
                     addEvent(input);
+                }
+            } else if (input.startsWith("delete ")) {
+                if (input.length() <= 7) {
+                    System.out.println("Please tell me which task to delete! Try again.");
+                } else {
+                    try {
+                        int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
+                        if (taskNum < 0 || taskNum >= numberOfTasks) {
+                            System.out.println("That task number does not exist! Try again.");
+                        } else {
+                            deleteTask(taskNum);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please give me a valid task number! Try again.");
+                    }
                 }
             } else {
                 System.out.println("I don't know what that means! Try again.");
@@ -149,6 +161,30 @@ public class Luke {
                 System.out.println("[E][ ] " + tasks[taskNum] + " (from: " + taskTime[taskNum] + ")");
             }
         }
+    }
+
+    private static void deleteTask(int taskNum) {
+        String deletedTask = "";
+        if (taskType[taskNum].equals("T")) {
+            deletedTask = "[T]" + (taskStatus[taskNum] ? "[X] " : "[ ] ") + tasks[taskNum];
+        } else if (taskType[taskNum].equals("D")) {
+            deletedTask = "[D]" + (taskStatus[taskNum] ? "[X] " : "[ ] ") + tasks[taskNum] + " (by: " + taskTime[taskNum] + ")";
+        } else if (taskType[taskNum].equals("E")) {
+            deletedTask = "[E]" + (taskStatus[taskNum] ? "[X] " : "[ ] ") + tasks[taskNum] + " (from: " + taskTime[taskNum] + ")";
+        }
+
+        for (int i = taskNum; i < numberOfTasks - 1; i++) {
+            tasks[i] = tasks[i + 1];
+            taskStatus[i] = taskStatus[i + 1];
+            taskType[i] = taskType[i + 1];
+            taskTime[i] = taskTime[i + 1];
+        }
+
+        numberOfTasks--;
+
+        System.out.println("Noted. I've removed this task:");
+        System.out.println(deletedTask);
+        System.out.println("Now you have " + numberOfTasks + " tasks in the list.");
     }
 
     private static void printLine() {
