@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.*;
 
 public class Luke {
     private static String[] tasks = new String[100];
@@ -6,6 +7,15 @@ public class Luke {
     private static String[] taskType = new String[100];
     private static String[] taskTime = new String[100];
     private static int numberOfTasks = 0;
+    private static final String FILE_PATH = "./data/luke.txt";
+
+    static {
+        File directory = new File("./data");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        loadTasks();
+    }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -83,6 +93,47 @@ public class Luke {
         scanner.close();
     }
 
+    private static void saveTasks() {
+        try {
+            FileWriter writer = new FileWriter(FILE_PATH);
+            for (int i = 0; i < numberOfTasks; i++) {
+                writer.write(taskType[i] + " | " +
+                        (taskStatus[i] ? "1" : "0") + " | " +
+                        tasks[i] +
+                        (taskTime[i].isEmpty() ? "" : " | " + taskTime[i]) +
+                        "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Something went wrong saving the file!");
+        }
+    }
+
+    private static void loadTasks() {
+        try {
+            File file = new File(FILE_PATH);
+            if (!file.exists()) {
+                return;
+            }
+
+            Scanner fileScanner = new Scanner(file);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(" \\| ");
+
+                taskType[numberOfTasks] = parts[0];
+                taskStatus[numberOfTasks] = parts[1].equals("1");
+                tasks[numberOfTasks] = parts[2];
+                taskTime[numberOfTasks] = parts.length > 3 ? parts[3] : "";
+
+                numberOfTasks++;
+            }
+            fileScanner.close();
+        } catch (IOException e) {
+            System.out.println("Something went wrong loading the file!");
+        }
+    }
+
     private static void addTodo(String input) {
         String task = input.substring(5);
         tasks[numberOfTasks] = task;
@@ -92,6 +143,7 @@ public class Luke {
         System.out.println("[T][ ] " + task);
         numberOfTasks++;
         System.out.println("You have " + numberOfTasks + " tasks in the list.");
+        saveTasks();
     }
 
     private static void addDeadline(String input) {
@@ -103,6 +155,7 @@ public class Luke {
         System.out.println("[D][ ] " + parts[0] + " (by: " + parts[1] + ")");
         numberOfTasks++;
         System.out.println("You have " + numberOfTasks + " tasks in the list.");
+        saveTasks();
     }
 
     private static void addEvent(String input) {
@@ -115,6 +168,7 @@ public class Luke {
         System.out.println("[E][ ] " + parts[0] + " (from: " + timeParts[0] + " to: " + timeParts[1] + ")");
         numberOfTasks++;
         System.out.println("You have " + numberOfTasks + " tasks in the list.");
+        saveTasks();
     }
 
     private static void listTasks() {
@@ -146,6 +200,7 @@ public class Luke {
             } else if (taskType[taskNum].equals("E")) {
                 System.out.println("[E][X] " + tasks[taskNum] + " (from: " + taskTime[taskNum] + ")");
             }
+            saveTasks();
         }
     }
 
@@ -160,6 +215,7 @@ public class Luke {
             } else if (taskType[taskNum].equals("E")) {
                 System.out.println("[E][ ] " + tasks[taskNum] + " (from: " + taskTime[taskNum] + ")");
             }
+            saveTasks();
         }
     }
 
@@ -185,6 +241,7 @@ public class Luke {
         System.out.println("Noted. I've removed this task:");
         System.out.println(deletedTask);
         System.out.println("Now you have " + numberOfTasks + " tasks in the list.");
+        saveTasks();
     }
 
     private static void printLine() {
