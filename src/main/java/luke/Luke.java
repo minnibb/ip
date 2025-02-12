@@ -1,3 +1,5 @@
+package luke;
+
 public class Luke {
     private Storage storage;
     private TaskList tasks;
