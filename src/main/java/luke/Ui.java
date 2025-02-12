@@ -1,3 +1,5 @@
+package luke;
+
 import java.util.Scanner;
 
 public class Ui {

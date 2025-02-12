@@ -1,3 +1,5 @@
+package luke;
+
 public class Parser {
     public static Task parseDeadline(String input) throws LukeException {
         String[] parts = input.substring(9).split(" /by ");
