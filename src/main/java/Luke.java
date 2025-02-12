@@ -8,7 +8,7 @@ public class Luke {
     private static String[] taskTime = new String[100];
     private static int numberOfTasks = 0;
     private static final String FILE_PATH = "./data/luke.txt";
-
+    // Create data directory
     static {
         File directory = new File("./data");
         if (!directory.exists()) {
