@@ -8,7 +8,7 @@ public class Luke {
     private static String[] taskTime = new String[100];
     private static int numberOfTasks = 0;
     private static final String FILE_PATH = "./data/luke.txt";
-    // Create data directory
+
     static {
         File directory = new File("./data");
         if (!directory.exists()) {
@@ -93,47 +93,6 @@ public class Luke {
         scanner.close();
     }
 
-    private static void saveTasks() {
-        try {
-            FileWriter writer = new FileWriter(FILE_PATH);
-            for (int i = 0; i < numberOfTasks; i++) {
-                writer.write(taskType[i] + " | " +
-                        (taskStatus[i] ? "1" : "0") + " | " +
-                        tasks[i] +
-                        (taskTime[i].isEmpty() ? "" : " | " + taskTime[i]) +
-                        "\n");
-            }
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("Something went wrong saving the file!");
-        }
-    }
-
-    private static void loadTasks() {
-        try {
-            File file = new File(FILE_PATH);
-            if (!file.exists()) {
-                return;
-            }
-
-            Scanner fileScanner = new Scanner(file);
-            while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine();
-                String[] parts = line.split(" \\| ");
-
-                taskType[numberOfTasks] = parts[0];
-                taskStatus[numberOfTasks] = parts[1].equals("1");
-                tasks[numberOfTasks] = parts[2];
-                taskTime[numberOfTasks] = parts.length > 3 ? parts[3] : "";
-
-                numberOfTasks++;
-            }
-            fileScanner.close();
-        } catch (IOException e) {
-            System.out.println("Something went wrong loading the file!");
-        }
-    }
-
     private static void addTodo(String input) {
         String task = input.substring(5);
         tasks[numberOfTasks] = task;
@@ -148,11 +107,29 @@ public class Luke {
 
     private static void addDeadline(String input) {
         String[] parts = input.substring(9).split(" /by ");
-        tasks[numberOfTasks] = parts[0];
+        String task = parts[0];
+        String dateTime = parts[1];
+
+        String[] dateParts = dateTime.split(" ");
+        if (dateParts.length != 2) {
+            System.out.println("Please use format: day/month/year time (e.g., 2/12/2019 1800)");
+            return;
+        }
+
+        String[] date = dateParts[0].split("/");
+        String time = dateParts[1];
+
+        String monthName = getMonthName(date[1]);
+        String formattedTime = formatTime(time);
+
+        String formattedDate = monthName + " " + date[0] + " " + date[2] + ", " + formattedTime;
+
+        tasks[numberOfTasks] = task;
         taskType[numberOfTasks] = "D";
-        taskTime[numberOfTasks] = parts[1];
+        taskTime[numberOfTasks] = formattedDate;
+
         System.out.println("Noted. I've added this task:");
-        System.out.println("[D][ ] " + parts[0] + " (by: " + parts[1] + ")");
+        System.out.println("[D][ ] " + task + " (by: " + formattedDate + ")");
         numberOfTasks++;
         System.out.println("You have " + numberOfTasks + " tasks in the list.");
         saveTasks();
@@ -161,14 +138,58 @@ public class Luke {
     private static void addEvent(String input) {
         String[] parts = input.substring(6).split(" /from ");
         String[] timeParts = parts[1].split(" /to ");
-        tasks[numberOfTasks] = parts[0];
+        String task = parts[0];
+        String dateTime = timeParts[0];
+
+        String[] dateParts = dateTime.split(" ");
+        if (dateParts.length != 2) {
+            System.out.println("Please use format: day/month/year time (e.g., 2/12/2019 1400)");
+            return;
+        }
+
+        String[] date = dateParts[0].split("/");
+        String time = dateParts[1];
+
+        String monthName = getMonthName(date[1]);
+        String formattedTime = formatTime(time);
+
+        String formattedDate = monthName + " " + date[0] + " " + date[2] + ", " + formattedTime;
+
+        tasks[numberOfTasks] = task;
         taskType[numberOfTasks] = "E";
-        taskTime[numberOfTasks] = timeParts[0] + " to: " + timeParts[1];
+        taskTime[numberOfTasks] = formattedDate;
+
         System.out.println("Noted. I've added this task:");
-        System.out.println("[E][ ] " + parts[0] + " (from: " + timeParts[0] + " to: " + timeParts[1] + ")");
+        System.out.println("[E][ ] " + task + " (from: " + formattedDate + ")");
         numberOfTasks++;
         System.out.println("You have " + numberOfTasks + " tasks in the list.");
         saveTasks();
+    }
+
+    private static String getMonthName(String monthNumber) {
+        switch(monthNumber) {
+            case "1": return "Jan";
+            case "2": return "Feb";
+            case "3": return "Mar";
+            case "4": return "Apr";
+            case "5": return "May";
+            case "6": return "Jun";
+            case "7": return "Jul";
+            case "8": return "Aug";
+            case "9": return "Sep";
+            case "10": return "Oct";
+            case "11": return "Nov";
+            case "12": return "Dec";
+            default: return monthNumber;
+        }
+    }
+
+    private static String formatTime(String time) {
+        int hour = Integer.parseInt(time.substring(0, 2));
+        if (hour < 0 || hour > 23) {
+            return time;
+        }
+        return (hour <= 12 ? hour : hour - 12) + (hour < 12 ? "AM" : "PM");
     }
 
     private static void listTasks() {
@@ -242,6 +263,47 @@ public class Luke {
         System.out.println(deletedTask);
         System.out.println("Now you have " + numberOfTasks + " tasks in the list.");
         saveTasks();
+    }
+
+    private static void saveTasks() {
+        try {
+            FileWriter writer = new FileWriter(FILE_PATH);
+            for (int i = 0; i < numberOfTasks; i++) {
+                writer.write(taskType[i] + " | " +
+                        (taskStatus[i] ? "1" : "0") + " | " +
+                        tasks[i] +
+                        (taskTime[i].isEmpty() ? "" : " | " + taskTime[i]) +
+                        "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Something went wrong saving the file!");
+        }
+    }
+
+    private static void loadTasks() {
+        try {
+            File file = new File(FILE_PATH);
+            if (!file.exists()) {
+                return;
+            }
+
+            Scanner fileScanner = new Scanner(file);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(" \\| ");
+
+                taskType[numberOfTasks] = parts[0];
+                taskStatus[numberOfTasks] = parts[1].equals("1");
+                tasks[numberOfTasks] = parts[2];
+                taskTime[numberOfTasks] = parts.length > 3 ? parts[3] : "";
+
+                numberOfTasks++;
+            }
+            fileScanner.close();
+        } catch (IOException e) {
+            System.out.println("Something went wrong loading the file!");
+        }
     }
 
     private static void printLine() {
