@@ -1,0 +1,62 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Storage {
+    private final String filePath;
+
+    public Storage(String filePath) {
+        this.filePath = filePath;
+        File directory = new File("./data");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+    }
+
+    public ArrayList<Task> load() throws LukeException {
+        ArrayList<Task> tasks = new ArrayList<>();
+        try {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                return tasks;
+            }
+
+            Scanner fileScanner = new Scanner(file);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(" \\| ");
+
+                Task task = new Task(parts[2], parts[0]);
+                if (parts[1].equals("1")) {
+                    task.markAsDone();
+                }
+                if (parts.length > 3) {
+                    task.setTime(parts[3]);
+                }
+                tasks.add(task);
+            }
+            fileScanner.close();
+        } catch (IOException e) {
+            throw new LukeException("Something went wrong loading the file!");
+        }
+        return tasks;
+    }
+
+    public void save(ArrayList<Task> tasks) throws LukeException {
+        try {
+            FileWriter writer = new FileWriter(filePath);
+            for (Task task : tasks) {
+                writer.write(task.getType() + " | " +
+                        (task.isDone() ? "1" : "0") + " | " +
+                        task.getDescription() +
+                        (task.getTime().isEmpty() ? "" : " | " + task.getTime()) +
+                        "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            throw new LukeException("Something went wrong saving the file!");
+        }
+    }
+}
