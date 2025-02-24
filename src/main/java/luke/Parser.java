@@ -1,6 +1,17 @@
 package luke;
 
+/**
+ * Parser class that converts user commands into Task objects.
+ * Handles the formatting and validation of input strings.
+ */
 public class Parser {
+    /**
+     * Parses a deadline command and creates a deadline task.
+     *
+     * @param input User input in the format "deadline TASK /by DATE TIME"
+     * @return A new deadline Task object
+     * @throws LukeException If input format is incorrect
+     */
     public static Task parseDeadline(String input) throws LukeException {
         String[] parts = input.substring(9).split(" /by ");
         if (!input.contains("/by")) {
@@ -23,6 +34,13 @@ public class Parser {
         return newTask;
     }
 
+    /**
+     * Parses an event command and creates an event task.
+     *
+     * @param input User input in the format "event TASK /from DATE TIME /to END_TIME"
+     * @return A new event Task object
+     * @throws LukeException If input format is incorrect
+     */
     public static Task parseEvent(String input) throws LukeException {
         if (!input.contains("/from") || !input.contains("/to")) {
             throw new LukeException("Please tell me the time using /from and /to! Try again.");
@@ -46,12 +64,25 @@ public class Parser {
         return newTask;
     }
 
+    /**
+     * Formats date and time into a readable string.
+     *
+     * @param date Array with [day, month, year]
+     * @param time Time in 24-hour format (e.g., "1800")
+     * @return Formatted date string like "Jan 1 2023, 6PM"
+     */
     private static String formatDateTime(String[] date, String time) {
         String monthName = getMonthName(date[1]);
         String formattedTime = formatTime(time);
         return monthName + " " + date[0] + " " + date[2] + ", " + formattedTime;
     }
 
+    /**
+     * Converts a month number to its name.
+     *
+     * @param monthNumber Month as string ("1" to "12")
+     * @return Shorten month name
+     */
     private static String getMonthName(String monthNumber) {
         switch(monthNumber) {
             case "1": return "Jan";
@@ -70,6 +101,12 @@ public class Parser {
         }
     }
 
+    /**
+     * Converts 24-hour time to 12-hour AM/PM format.
+     *
+     * @param time Time in 24-hour format
+     * @return Time with AM/PM
+     */
     private static String formatTime(String time) {
         int hour = Integer.parseInt(time.substring(0, 2));
         if (hour < 0 || hour > 23) {
