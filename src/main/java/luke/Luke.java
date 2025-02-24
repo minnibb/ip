@@ -1,10 +1,19 @@
 package luke;
 
+/**
+ * Main class for the Luke task manager application.
+ * Handles the command loop and processing of user inputs.
+ */
 public class Luke {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
 
+    /**
+     * Creates a new Luke task manager instance.
+     *
+     * @param filePath Path to the save file
+     */
     public Luke(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -16,6 +25,9 @@ public class Luke {
         }
     }
 
+    /**
+     * Starts the command loop.
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
@@ -50,6 +62,9 @@ public class Luke {
         }
     }
 
+    /**
+     * Lists all tasks.
+     */
     private void listTasks() {
         if (tasks.size() == 0) {
             System.out.println("No tasks in your list!");
@@ -61,6 +76,12 @@ public class Luke {
         }
     }
 
+    /**
+     * Handles mark and unmark commands.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is incorrect
+     */
     private void handleMarkCommand(String input) throws LukeException {
         if (input.length() <= 5) {
             throw new LukeException("Please indicate which task to mark! Try again.");
@@ -84,6 +105,12 @@ public class Luke {
         }
     }
 
+    /**
+     * Handles todo command.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is incorrect
+     */
     private void handleTodoCommand(String input) throws LukeException {
         if (input.length() <= 5) {
             throw new LukeException("Please tell me what to do! Try again.");
@@ -97,6 +124,12 @@ public class Luke {
         storage.save(tasks.getTasks());
     }
 
+    /**
+     * Handles deadline command.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is incorrect
+     */
     private void handleDeadlineCommand(String input) throws LukeException {
         Task newTask = Parser.parseDeadline(input);
         tasks.addTask(newTask);
@@ -106,6 +139,12 @@ public class Luke {
         storage.save(tasks.getTasks());
     }
 
+    /**
+     * Handles event command.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is incorrect
+     */
     private void handleEventCommand(String input) throws LukeException {
         Task newTask = Parser.parseEvent(input);
         tasks.addTask(newTask);
@@ -115,6 +154,12 @@ public class Luke {
         storage.save(tasks.getTasks());
     }
 
+    /**
+     * Handles delete command.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is incorrect
+     */
     private void handleDeleteCommand(String input) throws LukeException {
         if (input.length() <= 7) {
             throw new LukeException("Please tell me which task to delete! Try again.");
@@ -135,6 +180,11 @@ public class Luke {
         }
     }
 
+    /**
+     * Main entry point of the application.
+     *
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         new Luke("data/luke.txt").run();
     }
