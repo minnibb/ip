@@ -52,6 +52,8 @@ public class Luke {
                     handleEventCommand(input);
                 } else if (input.startsWith("delete ")) {
                     handleDeleteCommand(input);
+                } else if (input.startsWith("find ")) {
+                    handleFindCommand(input);
                 } else {
                     ui.showError("I don't know what that means! Try again.");
                 }
@@ -80,7 +82,7 @@ public class Luke {
      * Handles mark and unmark commands.
      *
      * @param input Command string
-     * @throws LukeException If command format is incorrect
+     * @throws LukeException If command format is invalid
      */
     private void handleMarkCommand(String input) throws LukeException {
         if (input.length() <= 5) {
@@ -109,7 +111,7 @@ public class Luke {
      * Handles todo command.
      *
      * @param input Command string
-     * @throws LukeException If command format is incorrect
+     * @throws LukeException If command format is invalid
      */
     private void handleTodoCommand(String input) throws LukeException {
         if (input.length() <= 5) {
@@ -128,7 +130,7 @@ public class Luke {
      * Handles deadline command.
      *
      * @param input Command string
-     * @throws LukeException If command format is incorrect
+     * @throws LukeException If command format is invalid
      */
     private void handleDeadlineCommand(String input) throws LukeException {
         Task newTask = Parser.parseDeadline(input);
@@ -143,7 +145,7 @@ public class Luke {
      * Handles event command.
      *
      * @param input Command string
-     * @throws LukeException If command format is incorrect
+     * @throws LukeException If command format is invalid
      */
     private void handleEventCommand(String input) throws LukeException {
         Task newTask = Parser.parseEvent(input);
@@ -158,7 +160,7 @@ public class Luke {
      * Handles delete command.
      *
      * @param input Command string
-     * @throws LukeException If command format is incorrect
+     * @throws LukeException If command format is invalid
      */
     private void handleDeleteCommand(String input) throws LukeException {
         if (input.length() <= 7) {
@@ -177,6 +179,37 @@ public class Luke {
             storage.save(tasks.getTasks());
         } catch (NumberFormatException e) {
             throw new LukeException("Please give me a valid task number! Try again.");
+        }
+    }
+
+    /**
+     * Handles find command to search for tasks containing keywords.
+     *
+     * @param input Command string
+     * @throws LukeException If command format is invalid
+     */
+    private void handleFindCommand(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please enter a keyword to search for! Try again.");
+        }
+
+        String keyword = input.substring(5).trim().toLowerCase();
+        boolean found = false;
+
+        System.out.println("Here are the matching tasks in your list:");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.getTask(i);
+            String description = task.getDescription().toLowerCase();
+
+            if (description.contains(keyword)) {
+                System.out.println((i + 1) + "." + task.toString());
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No matching tasks found!");
         }
     }
 
