@@ -1,14 +1,14 @@
 package luke;
 
 /**
- * Represents a task
+ * Represents a task in Luke.
  * Can be a todo, deadline, or event.
  */
 public class Task {
-    protected String description;
-    protected boolean isDone;
-    protected String type;  // "T", "D", or "E"
-    protected String time;  // For deadlines and events
+    private String description;
+    private boolean isDone;
+    private String type;  // "T", "D", or "E"
+    private String time;  // For deadlines and events
 
     /**
      * Creates a new task.

@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Handles loading and saving tasks from file.
+ * Handles saving and loading tasks from file.
  */
 public class Storage {
     private final String filePath;
 
     /**
      * Creates a storage handler with specified file path.
-     * Makes a data folder if it doesn't exist.
+     * Makes a data folder if it doesn't exist yet.
      *
      * @param filePath Path to the save file
      */

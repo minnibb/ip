@@ -10,7 +10,7 @@ public class Parser {
      *
      * @param input User input in the format "deadline TASK /by DATE TIME"
      * @return A new deadline Task object
-     * @throws LukeException If input format is incorrect
+     * @throws LukeException If input format is wrong
      */
     public static Task parseDeadline(String input) throws LukeException {
         String[] parts = input.substring(9).split(" /by ");
@@ -39,7 +39,7 @@ public class Parser {
      *
      * @param input User input in the format "event TASK /from DATE TIME /to END_TIME"
      * @return A new event Task object
-     * @throws LukeException If input format is incorrect
+     * @throws LukeException If input format is wrong
      */
     public static Task parseEvent(String input) throws LukeException {
         if (!input.contains("/from") || !input.contains("/to")) {
@@ -81,10 +81,10 @@ public class Parser {
      * Converts a month number to its name.
      *
      * @param monthNumber Month as string ("1" to "12")
-     * @return Shorten month name
+     * @return Short month name (e.g., "Jan")
      */
     private static String getMonthName(String monthNumber) {
-        switch(monthNumber) {
+        switch (monthNumber) {
             case "1": return "Jan";
             case "2": return "Feb";
             case "3": return "Mar";
@@ -105,7 +105,7 @@ public class Parser {
      * Converts 24-hour time to 12-hour AM/PM format.
      *
      * @param time Time in 24-hour format
-     * @return Time with AM/PM
+     * @return Time with AM/PM suffix
      */
     private static String formatTime(String time) {
         int hour = Integer.parseInt(time.substring(0, 2));
