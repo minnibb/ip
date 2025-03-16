@@ -96,4 +96,39 @@ public class TaskList {
     public void markTaskAsNotDone(int index) {
         tasks.get(index).markAsNotDone();
     }
+
+    /**
+     * Sorts tasks by their date/time (for deadline and event tasks).
+     * Tasks without dates come first.
+     */
+    public void sortByDate() {
+        tasks.sort((t1, t2) -> {
+            // Tasks without dates first
+            if (t1.getTime().isEmpty() && !t2.getTime().isEmpty()) {
+                return -1;
+            }
+            if (!t1.getTime().isEmpty() && t2.getTime().isEmpty()) {
+                return 1;
+            }
+            if (t1.getTime().isEmpty() && t2.getTime().isEmpty()) {
+                return 0;
+            }
+            // Otherwise compare dates
+            return t1.getTime().compareTo(t2.getTime());
+        });
+    }
+
+    /**
+     * Sorts tasks alphabetically by description.
+     */
+    public void sortByDescription() {
+        tasks.sort((t1, t2) -> t1.getDescription().compareToIgnoreCase(t2.getDescription()));
+    }
+
+    /**
+     * Sorts tasks by type (todo, deadline, event).
+     */
+    public void sortByType() {
+        tasks.sort((t1, t2) -> t1.getType().compareTo(t2.getType()));
+    }
 }

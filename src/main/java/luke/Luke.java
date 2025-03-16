@@ -15,6 +15,7 @@ public class Luke {
     private static final String COMMAND_EVENT = "event ";
     private static final String COMMAND_DELETE = "delete ";
     private static final String COMMAND_FIND = "find ";
+    private static final String COMMAND_SORT = "sort ";
 
     private Storage storage;
     private TaskList tasks;
@@ -111,6 +112,12 @@ public class Luke {
             return false;
         }
 
+        // New sort command handler
+        if (input.startsWith(COMMAND_SORT)) {
+            handleSortCommand(input);
+            return false;
+        }
+
         // Default case for unrecognized command
         ui.showError("I don't know what that means! Try again.");
         return false;
@@ -140,6 +147,44 @@ public class Luke {
      */
     private void showTaskWithIndex(int index, Task task) {
         System.out.println(index + "." + task.toString());
+    }
+
+    /**
+     * Handles sort command.
+     *
+     * @param input Command string (e.g., "sort date" or "sort description")
+     * @throws LukeException If command format is invalid
+     */
+    private void handleSortCommand(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please specify how to sort! Try 'sort date' or 'sort description'.");
+        }
+
+        String sortCriteria = input.substring(5).trim().toLowerCase();
+
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks to sort!");
+            return;
+        }
+
+        switch (sortCriteria) {
+            case "date":
+                tasks.sortByDate();
+                System.out.println("Tasks sorted by date!");
+                break;
+            case "description":
+                tasks.sortByDescription();
+                System.out.println("Tasks sorted by description!");
+                break;
+            case "type":
+                tasks.sortByType();
+                System.out.println("Tasks sorted by type!");
+                break;
+            default:
+                throw new LukeException("Unknown sort criteria. Try 'sort date', 'sort description', or 'sort type'.");
+        }
+
+        listTasks();
     }
 
     /**
