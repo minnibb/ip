@@ -25,7 +25,8 @@ public class Ui {
     }
 
     /**
-     * Shows the welcome message.
+     * Shows the welcome message with app name and instructions.
+     * It is the first message users see when starting the app.
      */
     public void showWelcome() {
         showLine();
