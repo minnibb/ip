@@ -42,17 +42,30 @@ public class Storage {
 
             Scanner fileScanner = new Scanner(file);
             while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine();
-                String[] parts = line.split(" \\| ");
+                try {
+                    String line = fileScanner.nextLine();
+                    if (line.trim().isEmpty()) {
+                        continue; // Skip empty lines
+                    }
 
-                Task task = new Task(parts[2], parts[0]);
-                if (parts[1].equals("1")) {
-                    task.markAsDone();
+                    String[] parts = line.split(" \\| ");
+                    if (parts.length < 3) {
+                        System.out.println("Warning: Skipping invalid line: " + line);
+                        continue; // Skip invalid lines
+                    }
+
+                    Task task = new Task(parts[2], parts[0]);
+                    if (parts[1].equals("1")) {
+                        task.markAsDone();
+                    }
+                    if (parts.length > 3) {
+                        task.setTime(parts[3]);
+                    }
+                    tasks.add(task);
+                } catch (Exception e) {
+                    // If one line fails, continue with the rest
+                    System.out.println("Warning: Error parsing line in save file");
                 }
-                if (parts.length > 3) {
-                    task.setTime(parts[3]);
-                }
-                tasks.add(task);
             }
             fileScanner.close();
         } catch (IOException e) {
@@ -69,6 +82,15 @@ public class Storage {
      */
     public void save(ArrayList<Task> tasks) throws LukeException {
         try {
+            // Make sure the data directory exists
+            File directory = new File("./data");
+            if (!directory.exists()) {
+                boolean created = directory.mkdir();
+                if (!created) {
+                    throw new LukeException("Could not create data directory for saving.");
+                }
+            }
+
             FileWriter writer = new FileWriter(filePath);
             for (Task task : tasks) {
                 writer.write(task.getType() + " | " +
