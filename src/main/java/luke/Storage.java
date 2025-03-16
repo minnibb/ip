@@ -93,6 +93,7 @@ public class Storage {
 
             FileWriter writer = new FileWriter(filePath);
             for (Task task : tasks) {
+                // Format: TYPE | IS_DONE | DESCRIPTION | TIME
                 writer.write(task.getType() + " | " +
                         (task.isDone() ? "1" : "0") + " | " +
                         task.getDescription() +
