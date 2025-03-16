@@ -1,12 +1,18 @@
 package luke;
 
-import java.util.ArrayList;
-
 /**
  * Parser class that converts user commands into Task objects.
  * Handles the formatting and validation of input strings.
  */
 public class Parser {
+    // Constants to avoid magic numbers
+    private static final int DEADLINE_PREFIX_LENGTH = 9; // Length of "deadline "
+    private static final int EVENT_PREFIX_LENGTH = 6;    // Length of "event "
+
+    private static final String DEADLINE_SEPARATOR = " /by ";
+    private static final String EVENT_FROM_SEPARATOR = " /from ";
+    private static final String EVENT_TO_SEPARATOR = " /to ";
+
     /**
      * Parses a deadline command and creates a deadline task.
      *
@@ -15,10 +21,11 @@ public class Parser {
      * @throws LukeException If input format is wrong
      */
     public static Task parseDeadline(String input) throws LukeException {
-        String[] parts = input.substring(9).split(" /by ");
-        if (!input.contains("/by")) {
+        if (!input.contains(DEADLINE_SEPARATOR)) {
             throw new LukeException("Please tell me the deadline using /by after a task! Try again.");
         }
+
+        String[] parts = input.substring(DEADLINE_PREFIX_LENGTH).split(DEADLINE_SEPARATOR);
         String task = parts[0];
         String dateTime = parts[1];
 
@@ -31,7 +38,7 @@ public class Parser {
         String time = dateParts[1];
         String formattedDate = formatDateTime(date, time);
 
-        Task newTask = new Task(task, "D");
+        Task newTask = new Task(task, Task.TYPE_DEADLINE);
         newTask.setTime(formattedDate);
         return newTask;
     }
@@ -44,11 +51,13 @@ public class Parser {
      * @throws LukeException If input format is wrong
      */
     public static Task parseEvent(String input) throws LukeException {
-        if (!input.contains("/from") || !input.contains("/to")) {
+        if (!input.contains(EVENT_FROM_SEPARATOR) || !input.contains(EVENT_TO_SEPARATOR)) {
             throw new LukeException("Please tell me the time using /from and /to! Try again.");
         }
-        String[] parts = input.substring(6).split(" /from ");
-        String[] timeParts = parts[1].split(" /to ");
+
+        String[] parts = input.substring(EVENT_PREFIX_LENGTH).split(EVENT_FROM_SEPARATOR);
+        String[] timeParts = parts[1].split(EVENT_TO_SEPARATOR);
+
         String task = parts[0];
         String dateTime = timeParts[0];
 
@@ -61,7 +70,7 @@ public class Parser {
         String time = dateParts[1];
         String formattedDate = formatDateTime(date, time);
 
-        Task newTask = new Task(task, "E");
+        Task newTask = new Task(task, Task.TYPE_EVENT);
         newTask.setTime(formattedDate);
         return newTask;
     }
@@ -111,10 +120,15 @@ public class Parser {
      */
     private static String formatTime(String time) {
         int hour = Integer.parseInt(time.substring(0, 2));
-        if (hour < 0 || hour > 23) {
-            return time;
+        boolean isAM = hour < 12;
+        int displayHour = (hour <= 12) ? hour : (hour - 12);
+
+        // Handle midnight (0) as 12AM
+        if (displayHour == 0) {
+            displayHour = 12;
         }
-        return (hour <= 12 ? hour : hour - 12) + (hour < 12 ? "AM" : "PM");
+
+        return displayHour + (isAM ? "AM" : "PM");
     }
 
     /**
@@ -124,8 +138,8 @@ public class Parser {
      * @param keywords Variable number of keywords to search for
      * @return ArrayList of tasks that match any keyword
      */
-    public static ArrayList<Task> findTasksByKeywords(TaskList taskList, String... keywords) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
+    public static java.util.ArrayList<Task> findTasksByKeywords(TaskList taskList, String... keywords) {
+        java.util.ArrayList<Task> matchingTasks = new java.util.ArrayList<>();
 
         for (int i = 0; i < taskList.size(); i++) {
             Task task = taskList.getTask(i);

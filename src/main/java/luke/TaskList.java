@@ -62,6 +62,15 @@ public class TaskList {
     }
 
     /**
+     * Checks if the task list is empty.
+     *
+     * @return true if the list has no tasks, false otherwise
+     */
+    public boolean isEmpty() {
+        return tasks.isEmpty();
+    }
+
+    /**
      * Gets all tasks.
      *
      * @return List of all tasks

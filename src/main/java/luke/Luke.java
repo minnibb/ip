@@ -1,11 +1,21 @@
 package luke;
 
-import java.util.ArrayList;
 /**
  * Main class for the Luke task manager application.
  * Handles the command loop and processing of user inputs.
  */
 public class Luke {
+    // Constants for command prefixes to avoid magic strings
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_MARK = "mark ";
+    private static final String COMMAND_UNMARK = "unmark ";
+    private static final String COMMAND_TODO = "todo ";
+    private static final String COMMAND_DEADLINE = "deadline ";
+    private static final String COMMAND_EVENT = "event ";
+    private static final String COMMAND_DELETE = "delete ";
+    private static final String COMMAND_FIND = "find ";
+
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
@@ -38,45 +48,98 @@ public class Luke {
             ui.showLine();
 
             try {
-                if (input.equals("bye")) {
-                    ui.showBye();
-                    isExit = true;
-                } else if (input.equals("list")) {
-                    listTasks();
-                } else if (input.startsWith("mark ") || input.startsWith("unmark ")) {
-                    handleMarkCommand(input);
-                } else if (input.startsWith("todo ")) {
-                    handleTodoCommand(input);
-                } else if (input.startsWith("deadline ")) {
-                    handleDeadlineCommand(input);
-                } else if (input.startsWith("event ")) {
-                    handleEventCommand(input);
-                } else if (input.startsWith("delete ")) {
-                    handleDeleteCommand(input);
-                } else if (input.startsWith("find ")) {
-                    handleFindCommand(input);
-                } else {
-                    ui.showError("I don't know what that means! Try again.");
-                }
+                isExit = processCommand(input);
             } catch (LukeException e) {
                 ui.showError(e.getMessage());
             }
+
             ui.showLine();
         }
+    }
+
+    /**
+     * Processes a user command.
+     *
+     * @param input The user input command
+     * @return true if the program should exit, false otherwise
+     * @throws LukeException If command processing fails
+     */
+    private boolean processCommand(String input) throws LukeException {
+        // Guard clause for null or empty input
+        if (input == null || input.trim().isEmpty()) {
+            ui.showError("Please enter a command");
+            return false;
+        }
+
+        if (input.equals(COMMAND_BYE)) {
+            ui.showBye();
+            return true;
+        }
+
+        if (input.equals(COMMAND_LIST)) {
+            listTasks();
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_MARK) || input.startsWith(COMMAND_UNMARK)) {
+            handleMarkCommand(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_TODO)) {
+            handleTodoCommand(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_DEADLINE)) {
+            handleDeadlineCommand(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_EVENT)) {
+            handleEventCommand(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_DELETE)) {
+            handleDeleteCommand(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_FIND)) {
+            handleFindCommand(input);
+            return false;
+        }
+
+        // Default case for unrecognized command
+        ui.showError("I don't know what that means! Try again.");
+        return false;
     }
 
     /**
      * Lists all tasks.
      */
     private void listTasks() {
-        if (tasks.size() == 0) {
+        if (tasks.isEmpty()) {
             System.out.println("No tasks in your list!");
             return;
         }
+
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.getTask(i).toString());
+            Task task = tasks.getTask(i);
+            showTaskWithIndex(i + 1, task);
         }
+    }
+
+    /**
+     * Shows a task with its index.
+     *
+     * @param index 1-based index to display
+     * @param task Task to display
+     */
+    private void showTaskWithIndex(int index, Task task) {
+        System.out.println(index + "." + task.toString());
     }
 
     /**
@@ -89,23 +152,59 @@ public class Luke {
         if (input.length() <= 5) {
             throw new LukeException("Please indicate which task to mark! Try again.");
         }
+
         try {
-            int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
-            if (taskNum < 0 || taskNum >= tasks.size()) {
-                throw new LukeException("That task number does not exist! Try again.");
-            }
-            if (input.startsWith("mark ")) {
-                tasks.markTaskAsDone(taskNum);
-                System.out.println("Nice! I've marked this task as done:");
-            } else {
-                tasks.markTaskAsNotDone(taskNum);
-                System.out.println("OK, I've marked this task as not done yet:");
-            }
-            System.out.println(tasks.getTask(taskNum));
-            storage.save(tasks.getTasks());
+            int taskNum = extractTaskNumber(input);
+            validateTaskIndex(taskNum);
+
+            boolean isMarkCommand = input.startsWith(COMMAND_MARK);
+            updateTaskMarkStatus(taskNum, isMarkCommand);
+
+            saveTasksToStorage();
+
         } catch (NumberFormatException e) {
             throw new LukeException("Please give me a valid task number! Try again.");
         }
+    }
+
+    /**
+     * Extracts the task number from the command string.
+     *
+     * @param input Command string
+     * @return Zero-based task index
+     */
+    private int extractTaskNumber(String input) {
+        String[] parts = input.split(" ");
+        return Integer.parseInt(parts[1]) - 1; // Convert to zero-based index
+    }
+
+    /**
+     * Validates if a task index is valid.
+     *
+     * @param taskIndex Zero-based task index
+     * @throws LukeException If task index is invalid
+     */
+    private void validateTaskIndex(int taskIndex) throws LukeException {
+        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+            throw new LukeException("That task number does not exist! Try again.");
+        }
+    }
+
+    /**
+     * Updates the mark status of a task.
+     *
+     * @param taskIndex Zero-based task index
+     * @param isMarking True to mark as done, false to mark as not done
+     */
+    private void updateTaskMarkStatus(int taskIndex, boolean isMarking) {
+        if (isMarking) {
+            tasks.markTaskAsDone(taskIndex);
+            System.out.println("Nice! I've marked this task as done:");
+        } else {
+            tasks.markTaskAsNotDone(taskIndex);
+            System.out.println("OK, I've marked this task as not done yet:");
+        }
+        System.out.println(tasks.getTask(taskIndex));
     }
 
     /**
@@ -118,13 +217,11 @@ public class Luke {
         if (input.length() <= 5) {
             throw new LukeException("Please tell me what to do! Try again.");
         }
-        String description = input.substring(5);
-        Task newTask = new Task(description, "T");
-        tasks.addTask(newTask);
-        System.out.println("Noted. I've added this task:");
-        System.out.println(newTask);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-        storage.save(tasks.getTasks());
+
+        String description = input.substring(COMMAND_TODO.length());
+        Task newTask = new Task(description, Task.TYPE_TODO);
+
+        addTaskAndShowFeedback(newTask);
     }
 
     /**
@@ -135,11 +232,7 @@ public class Luke {
      */
     private void handleDeadlineCommand(String input) throws LukeException {
         Task newTask = Parser.parseDeadline(input);
-        tasks.addTask(newTask);
-        System.out.println("Noted. I've added this task:");
-        System.out.println(newTask);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-        storage.save(tasks.getTasks());
+        addTaskAndShowFeedback(newTask);
     }
 
     /**
@@ -150,10 +243,38 @@ public class Luke {
      */
     private void handleEventCommand(String input) throws LukeException {
         Task newTask = Parser.parseEvent(input);
-        tasks.addTask(newTask);
+        addTaskAndShowFeedback(newTask);
+    }
+
+    /**
+     * Adds a task and shows feedback to the user.
+     *
+     * @param task Task to add
+     * @throws LukeException If saving fails
+     */
+    private void addTaskAndShowFeedback(Task task) throws LukeException {
+        tasks.addTask(task);
+        showTaskAddedMessage(task);
+        saveTasksToStorage();
+    }
+
+    /**
+     * Shows a message that a task was added.
+     *
+     * @param task The added task
+     */
+    private void showTaskAddedMessage(Task task) {
         System.out.println("Noted. I've added this task:");
-        System.out.println(newTask);
+        System.out.println(task);
         System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    /**
+     * Saves current tasks to storage.
+     *
+     * @throws LukeException If saving fails
+     */
+    private void saveTasksToStorage() throws LukeException {
         storage.save(tasks.getTasks());
     }
 
@@ -167,20 +288,33 @@ public class Luke {
         if (input.length() <= 7) {
             throw new LukeException("Please tell me which task to delete! Try again.");
         }
+
         try {
-            int taskNum = Integer.parseInt(input.split(" ")[1]) - 1;
-            if (taskNum < 0 || taskNum >= tasks.size()) {
-                throw new LukeException("That task number does not exist! Try again.");
-            }
-            Task deletedTask = tasks.getTask(taskNum);
-            tasks.deleteTask(taskNum);
-            System.out.println("Noted. I've removed this task:");
-            System.out.println(deletedTask);
-            System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-            storage.save(tasks.getTasks());
+            int taskNum = extractTaskNumber(input);
+            validateTaskIndex(taskNum);
+
+            deleteTaskAndShowFeedback(taskNum);
+
         } catch (NumberFormatException e) {
             throw new LukeException("Please give me a valid task number! Try again.");
         }
+    }
+
+    /**
+     * Deletes a task and shows feedback.
+     *
+     * @param taskIndex Zero-based task index
+     * @throws LukeException If saving fails
+     */
+    private void deleteTaskAndShowFeedback(int taskIndex) throws LukeException {
+        Task deletedTask = tasks.getTask(taskIndex);
+        tasks.deleteTask(taskIndex);
+
+        System.out.println("Noted. I've removed this task:");
+        System.out.println(deletedTask);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+
+        saveTasksToStorage();
     }
 
     /**
@@ -194,19 +328,31 @@ public class Luke {
             throw new LukeException("Please enter a keyword to search for! Try again.");
         }
 
-        String[] keywords = input.substring(5).trim().split("\\s+");
-        ArrayList<Task> matchingTasks = Parser.findTasksByKeywords(tasks, keywords);
+        String keyword = input.substring(COMMAND_FIND.length()).trim().toLowerCase();
+        findAndDisplayMatchingTasks(keyword);
+    }
 
-        if (matchingTasks.isEmpty()) {
-            ui.showMessages("No matching tasks found!");
-        } else {
-            ui.showMessages(
-                    "Here are the matching tasks in your list:",
-                    "Found " + matchingTasks.size() + " matching tasks:"
-            );
-            for (int i = 0; i < matchingTasks.size(); i++) {
-                System.out.println((i + 1) + "." + matchingTasks.get(i).toString());
+    /**
+     * Finds and displays tasks matching the keyword.
+     *
+     * @param keyword Keyword to search for
+     */
+    private void findAndDisplayMatchingTasks(String keyword) {
+        boolean found = false;
+        System.out.println("Here are the matching tasks in your list:");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.getTask(i);
+            String description = task.getDescription().toLowerCase();
+
+            if (description.contains(keyword)) {
+                showTaskWithIndex(i + 1, task);
+                found = true;
             }
+        }
+
+        if (!found) {
+            System.out.println("No matching tasks found!");
         }
     }
 
@@ -215,14 +361,16 @@ public class Luke {
      *
      * @param tasks The tasks to add
      */
-    public void addMultipleTasks(Task... tasks) {
-        for (Task task : tasks) {
+    public void addMultipleTasks(Task... newTasks) {
+        for (Task task : newTasks) {
             this.tasks.addTask(task);
             System.out.println("Added: " + task);
         }
+
         System.out.println("Now you have " + this.tasks.size() + " tasks in the list.");
+
         try {
-            storage.save(this.tasks.getTasks());
+            saveTasksToStorage();
         } catch (LukeException e) {
             ui.showError(e.getMessage());
         }

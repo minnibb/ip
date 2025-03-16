@@ -5,6 +5,11 @@ package luke;
  * Can be a todo, deadline, or event.
  */
 public class Task {
+    // Constants for task types
+    public static final String TYPE_TODO = "T";
+    public static final String TYPE_DEADLINE = "D";
+    public static final String TYPE_EVENT = "E";
+
     private String description;
     private boolean isDone;
     private String type;  // "T", "D", or "E"
@@ -83,16 +88,26 @@ public class Task {
     }
 
     /**
+     * Returns the status display for the task.
+     *
+     * @return Status string [X] or [ ]
+     */
+    private String getStatusString() {
+        return isDone ? "[X]" : "[ ]";
+    }
+
+    /**
      * Formats the task as a string.
      *
      * @return String with task type, status, description and time
      */
     @Override
     public String toString() {
-        String status = isDone ? "[X]" : "[ ]";
-        if (type.equals("T")) {
+        String status = getStatusString();
+
+        if (type.equals(TYPE_TODO)) {
             return "[T]" + status + " " + description;
-        } else if (type.equals("D")) {
+        } else if (type.equals(TYPE_DEADLINE)) {
             return "[D]" + status + " " + description + " (by: " + time + ")";
         } else {
             return "[E]" + status + " " + description + " (from: " + time + ")";
