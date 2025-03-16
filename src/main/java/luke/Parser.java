@@ -1,5 +1,7 @@
 package luke;
 
+import java.util.ArrayList;
+
 /**
  * Parser class that converts user commands into Task objects.
  * Handles the formatting and validation of input strings.
@@ -113,5 +115,30 @@ public class Parser {
             return time;
         }
         return (hour <= 12 ? hour : hour - 12) + (hour < 12 ? "AM" : "PM");
+    }
+
+    /**
+     * Searches for tasks matching any of the provided keywords.
+     *
+     * @param taskList The list of tasks to search
+     * @param keywords Variable number of keywords to search for
+     * @return ArrayList of tasks that match any keyword
+     */
+    public static ArrayList<Task> findTasksByKeywords(TaskList taskList, String... keywords) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+
+        for (int i = 0; i < taskList.size(); i++) {
+            Task task = taskList.getTask(i);
+            String description = task.getDescription().toLowerCase();
+
+            for (String keyword : keywords) {
+                if (description.contains(keyword.toLowerCase())) {
+                    matchingTasks.add(task);
+                    break;  // Once we find a match, no need to check other keywords
+                }
+            }
+        }
+
+        return matchingTasks;
     }
 }

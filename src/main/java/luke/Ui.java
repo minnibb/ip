@@ -70,4 +70,15 @@ public class Ui {
     public void showBye() {
         System.out.println("Bye. Hope to see you again!!");
     }
+
+    /**
+     * Shows multiple messages at once.
+     *
+     * @param messages The messages to display
+     */
+    public void showMessages(String... messages) {
+        for (String message : messages) {
+            System.out.println(message);
+        }
+    }
 }

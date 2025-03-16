@@ -1,5 +1,6 @@
 package luke;
 
+import java.util.ArrayList;
 /**
  * Main class for the Luke task manager application.
  * Handles the command loop and processing of user inputs.
@@ -193,23 +194,37 @@ public class Luke {
             throw new LukeException("Please enter a keyword to search for! Try again.");
         }
 
-        String keyword = input.substring(5).trim().toLowerCase();
-        boolean found = false;
+        String[] keywords = input.substring(5).trim().split("\\s+");
+        ArrayList<Task> matchingTasks = Parser.findTasksByKeywords(tasks, keywords);
 
-        System.out.println("Here are the matching tasks in your list:");
-
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.getTask(i);
-            String description = task.getDescription().toLowerCase();
-
-            if (description.contains(keyword)) {
-                System.out.println((i + 1) + "." + task.toString());
-                found = true;
+        if (matchingTasks.isEmpty()) {
+            ui.showMessages("No matching tasks found!");
+        } else {
+            ui.showMessages(
+                    "Here are the matching tasks in your list:",
+                    "Found " + matchingTasks.size() + " matching tasks:"
+            );
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + "." + matchingTasks.get(i).toString());
             }
         }
+    }
 
-        if (!found) {
-            System.out.println("No matching tasks found!");
+    /**
+     * Adds multiple tasks at once.
+     *
+     * @param tasks The tasks to add
+     */
+    public void addMultipleTasks(Task... tasks) {
+        for (Task task : tasks) {
+            this.tasks.addTask(task);
+            System.out.println("Added: " + task);
+        }
+        System.out.println("Now you have " + this.tasks.size() + " tasks in the list.");
+        try {
+            storage.save(this.tasks.getTasks());
+        } catch (LukeException e) {
+            ui.showError(e.getMessage());
         }
     }
 
