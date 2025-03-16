@@ -19,10 +19,13 @@ public class Storage {
      * @param filePath Path to the save file
      */
     public Storage(String filePath) {
+        assert filePath != null : "File path cannot be null";
+
         this.filePath = filePath;
         File directory = new File("./data");
         if (!directory.exists()) {
-            directory.mkdir();
+            boolean created = directory.mkdir();
+            assert created : "Failed to create data directory";
         }
     }
 
@@ -43,14 +46,30 @@ public class Storage {
             Scanner fileScanner = new Scanner(file);
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
-                String[] parts = line.split(" \\| ");
+                assert line != null : "Line read from file cannot be null";
 
-                Task task = new Task(parts[2], parts[0]);
-                if (parts[1].equals("1")) {
+                String[] parts = line.split(" \\| ");
+                assert parts.length >= 3 : "Invalid file format: each line should have at least 3 parts";
+
+                String type = parts[0];
+                assert type.equals("T") || type.equals("D") || type.equals("E") :
+                        "Task type must be T, D, or E, but was " + type;
+
+                String doneStatus = parts[1];
+                assert doneStatus.equals("0") || doneStatus.equals("1") :
+                        "Done status must be 0 or 1, but was " + doneStatus;
+
+                String description = parts[2];
+                assert description != null && !description.isEmpty() : "Task description cannot be empty";
+
+                Task task = new Task(description, type);
+                if (doneStatus.equals("1")) {
                     task.markAsDone();
                 }
                 if (parts.length > 3) {
-                    task.setTime(parts[3]);
+                    String time = parts[3];
+                    assert time != null : "Time part cannot be null";
+                    task.setTime(time);
                 }
                 tasks.add(task);
             }
@@ -68,9 +87,13 @@ public class Storage {
      * @throws LukeException If file can't be written
      */
     public void save(ArrayList<Task> tasks) throws LukeException {
+        assert tasks != null : "Tasks list cannot be null";
+
         try {
             FileWriter writer = new FileWriter(filePath);
             for (Task task : tasks) {
+                assert task != null : "Task in the list cannot be null";
+
                 writer.write(task.getType() + " | " +
                         (task.isDone() ? "1" : "0") + " | " +
                         task.getDescription() +

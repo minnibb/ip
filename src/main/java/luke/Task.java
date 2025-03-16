@@ -17,6 +17,11 @@ public class Task {
      * @param type Type of task: "T" (todo), "D" (deadline), "E" (event)
      */
     public Task(String description, String type) {
+        assert description != null : "Task description cannot be null";
+        assert type != null : "Task type cannot be null";
+        assert type.equals("T") || type.equals("D") || type.equals("E") :
+                "Task type must be T, D, or E, but was " + type;
+
         this.description = description;
         this.isDone = false;
         this.type = type;
@@ -29,6 +34,7 @@ public class Task {
      * @return Task description
      */
     public String getDescription() {
+        assert description != null : "Description should not be null";
         return description;
     }
 
@@ -47,6 +53,7 @@ public class Task {
      * @return "T", "D", or "E"
      */
     public String getType() {
+        assert type != null : "Type should not be null";
         return type;
     }
 
@@ -56,6 +63,7 @@ public class Task {
      * @return Time string for the task
      */
     public String getTime() {
+        assert time != null : "Time should not be null, even if empty";
         return time;
     }
 
@@ -65,6 +73,7 @@ public class Task {
      * @param time Time string to set
      */
     public void setTime(String time) {
+        assert time != null : "Time cannot be set to null";
         this.time = time;
     }
 
@@ -90,11 +99,15 @@ public class Task {
     @Override
     public String toString() {
         String status = isDone ? "[X]" : "[ ]";
+        assert type != null : "Type should not be null when converting to string";
+
         if (type.equals("T")) {
             return "[T]" + status + " " + description;
         } else if (type.equals("D")) {
+            assert time != null && !time.isEmpty() : "Time should be set for deadline tasks";
             return "[D]" + status + " " + description + " (by: " + time + ")";
         } else {
+            assert time != null && !time.isEmpty() : "Time should be set for event tasks";
             return "[E]" + status + " " + description + " (from: " + time + ")";
         }
     }
