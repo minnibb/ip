@@ -61,7 +61,7 @@ public class Ui {
      * @param message The error message to display
      */
     public void showError(String message) {
-        System.out.println(message);
+        System.out.println("ERROR: " + message);
     }
 
     /**
