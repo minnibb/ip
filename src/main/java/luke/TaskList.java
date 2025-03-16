@@ -127,6 +127,7 @@ public class TaskList {
 
     /**
      * Sorts tasks by type (todo, deadline, event).
+     * Maintains stable ordering within each type.
      */
     public void sortByType() {
         tasks.sort((t1, t2) -> t1.getType().compareTo(t2.getType()));
