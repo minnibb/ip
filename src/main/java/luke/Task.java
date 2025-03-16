@@ -103,6 +103,7 @@ public class Task {
      */
     @Override
     public String toString() {
+        // Returns formatted task with type marker, status, and details
         String status = getStatusString();
 
         if (type.equals(TYPE_TODO)) {
