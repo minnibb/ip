@@ -4,3 +4,6 @@ T | 0 | read book
 D | 0 | homework | Dec 12 2020, 4PM
 T | 0 | stuff
 D | 0 | work | Dec 12 2021, 7PM
+D | 0 | complete assignment | Dec 20 2021, 6PM
+E | 0 | team meeting | Dec 18 2025, 4PM
+D | 0 | project | Aug 12 2025, 4PM

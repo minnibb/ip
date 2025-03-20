@@ -20,6 +20,7 @@ public class Luke {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
+    private StringBuilder responseBuilder; // For GUI responses
 
     /**
      * Creates a new Luke task manager instance.
@@ -35,6 +36,7 @@ public class Luke {
             ui.showLoadingError();
             tasks = new TaskList();
         }
+        responseBuilder = new StringBuilder();
     }
 
     /**
@@ -57,6 +59,271 @@ public class Luke {
             ui.showLine();
         }
     }
+
+    /**
+     * Returns a welcome message when the app starts.
+     */
+    public String getWelcomeMessage() {
+        return "Hello! I'm Luke\nWhat can I do for you today?";
+    }
+
+    /**
+     * Processes a command and returns the response as a string.
+     * This method is used by the GUI.
+     *
+     * @param input The user input command
+     * @return The response from Luke
+     */
+    public String getResponse(String input) {
+        responseBuilder = new StringBuilder();
+
+        try {
+            processCommandForGui(input);
+        } catch (LukeException e) {
+            return e.getMessage();
+        }
+
+        return responseBuilder.toString();
+    }
+
+    /**
+     * Processes a command for GUI and adds the response to responseBuilder.
+     *
+     * @param input The user input command
+     * @return true if the program should exit, false otherwise
+     * @throws LukeException If command processing fails
+     */
+    private boolean processCommandForGui(String input) throws LukeException {
+        // Guard clause for null or empty input
+        if (input == null || input.trim().isEmpty()) {
+            throw new LukeException("Please enter a command");
+        }
+
+        if (input.equals(COMMAND_BYE)) {
+            responseBuilder.append("Goodbye! Hope to see you again soon!");
+            return true;
+        }
+
+        if (input.equals(COMMAND_LIST)) {
+            listTasksForGui();
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_MARK) || input.startsWith(COMMAND_UNMARK)) {
+            handleMarkCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_TODO)) {
+            handleTodoCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_DEADLINE)) {
+            handleDeadlineCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_EVENT)) {
+            handleEventCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_DELETE)) {
+            handleDeleteCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_FIND)) {
+            handleFindCommandForGui(input);
+            return false;
+        }
+
+        if (input.startsWith(COMMAND_SORT)) {
+            handleSortCommandForGui(input);
+            return false;
+        }
+
+        responseBuilder.append("I don't know what that means! Try again.");
+        return false;
+    }
+
+    /**
+     * Lists all tasks and appends to responseBuilder.
+     */
+    private void listTasksForGui() {
+        if (tasks.isEmpty()) {
+            responseBuilder.append("No tasks in your list!");
+            return;
+        }
+
+        responseBuilder.append("Here are the tasks in your list:\n");
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.getTask(i);
+            responseBuilder.append(i + 1).append(".").append(task.toString()).append("\n");
+        }
+    }
+
+    /**
+     * Handles mark command for GUI.
+     */
+    private void handleMarkCommandForGui(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please indicate which task to mark! Try again.");
+        }
+
+        try {
+            int taskNum = extractTaskNumber(input);
+            validateTaskIndex(taskNum);
+
+            boolean isMarkCommand = input.startsWith(COMMAND_MARK);
+            if (isMarkCommand) {
+                tasks.markTaskAsDone(taskNum);
+                responseBuilder.append("Nice! I've marked this task as done:\n");
+            } else {
+                tasks.markTaskAsNotDone(taskNum);
+                responseBuilder.append("OK, I've marked this task as not done yet:\n");
+            }
+            responseBuilder.append(tasks.getTask(taskNum));
+
+            saveTasksToStorage();
+
+        } catch (NumberFormatException e) {
+            throw new LukeException("Please give me a valid task number! Try again.");
+        }
+    }
+
+    /**
+     * Handles todo command for GUI.
+     */
+    private void handleTodoCommandForGui(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please tell me what to do! Try again.");
+        }
+
+        String description = input.substring(COMMAND_TODO.length());
+        Task newTask = new Task(description, Task.TYPE_TODO);
+
+        tasks.addTask(newTask);
+        responseBuilder.append("Noted. I've added this task:\n")
+                .append(newTask).append("\n")
+                .append("Now you have ").append(tasks.size()).append(" tasks in the list.");
+        saveTasksToStorage();
+    }
+
+    /**
+     * Handles deadline command for GUI.
+     */
+    private void handleDeadlineCommandForGui(String input) throws LukeException {
+        Task newTask = Parser.parseDeadline(input);
+        tasks.addTask(newTask);
+        responseBuilder.append("Noted. I've added this task:\n")
+                .append(newTask).append("\n")
+                .append("Now you have ").append(tasks.size()).append(" tasks in the list.");
+        saveTasksToStorage();
+    }
+
+    /**
+     * Handles event command for GUI.
+     */
+    private void handleEventCommandForGui(String input) throws LukeException {
+        Task newTask = Parser.parseEvent(input);
+        tasks.addTask(newTask);
+        responseBuilder.append("Noted. I've added this task:\n")
+                .append(newTask).append("\n")
+                .append("Now you have ").append(tasks.size()).append(" tasks in the list.");
+        saveTasksToStorage();
+    }
+
+    /**
+     * Handles delete command for GUI.
+     */
+    private void handleDeleteCommandForGui(String input) throws LukeException {
+        if (input.length() <= 7) {
+            throw new LukeException("Please tell me which task to delete! Try again.");
+        }
+
+        try {
+            int taskNum = extractTaskNumber(input);
+            validateTaskIndex(taskNum);
+
+            Task deletedTask = tasks.getTask(taskNum);
+            tasks.deleteTask(taskNum);
+
+            responseBuilder.append("Noted. I've removed this task:\n")
+                    .append(deletedTask).append("\n")
+                    .append("Now you have ").append(tasks.size()).append(" tasks in the list.");
+
+            saveTasksToStorage();
+
+        } catch (NumberFormatException e) {
+            throw new LukeException("Please give me a valid task number! Try again.");
+        }
+    }
+
+    /**
+     * Handles find command for GUI.
+     */
+    private void handleFindCommandForGui(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please enter a keyword to search for! Try again.");
+        }
+
+        String keyword = input.substring(COMMAND_FIND.length()).trim().toLowerCase();
+        boolean found = false;
+        responseBuilder.append("Here are the matching tasks in your list:\n");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.getTask(i);
+            String description = task.getDescription().toLowerCase();
+
+            if (description.contains(keyword)) {
+                responseBuilder.append(i + 1).append(".").append(task.toString()).append("\n");
+                found = true;
+            }
+        }
+
+        if (!found) {
+            responseBuilder.append("No matching tasks found!");
+        }
+    }
+
+    /**
+     * Handles sort command for GUI.
+     */
+    private void handleSortCommandForGui(String input) throws LukeException {
+        if (input.length() <= 5) {
+            throw new LukeException("Please specify how to sort! Try 'sort date' or 'sort description'.");
+        }
+
+        String sortCriteria = input.substring(5).trim().toLowerCase();
+
+        if (tasks.isEmpty()) {
+            responseBuilder.append("No tasks to sort!");
+            return;
+        }
+
+        switch (sortCriteria) {
+            case "date":
+                tasks.sortByDate();
+                responseBuilder.append("Tasks sorted by date!\n");
+                break;
+            case "description":
+                tasks.sortByDescription();
+                responseBuilder.append("Tasks sorted by description!\n");
+                break;
+            case "type":
+                tasks.sortByType();
+                responseBuilder.append("Tasks sorted by type!\n");
+                break;
+            default:
+                throw new LukeException("Unknown sort criteria. Try 'sort date', 'sort description', or 'sort type'.");
+        }
+
+        listTasksForGui();
+    }
+
+    // The rest of your existing methods remain the same
 
     /**
      * Processes a user command.

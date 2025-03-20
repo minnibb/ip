@@ -56,7 +56,8 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();
 
-        Label welcomeMsg = new Label("Hello! I'm Luke\nWhat can I do for you today?");
+        // Show welcome message using Luke's welcome method
+        Label welcomeMsg = new Label(luke.getWelcomeMessage());
         dialogContainer.getChildren().add(welcomeMsg);
     }
 
@@ -138,7 +139,7 @@ public class Main extends Application {
             return "Bye. Hope to see you again!!";
         }
 
-        // For other commands, just echo
-        return "Luke heard: " + input;
+        // Use Luke's getResponse method for all commands
+        return luke.getResponse(input);
     }
 }
